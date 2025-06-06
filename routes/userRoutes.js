@@ -1,7 +1,7 @@
 const express = require('express');
-const userController = require('../controllers/userController'); // Import the controller
+const userController = require('../controllers/userController');
 
-const router = express.Router(); // Create an Express Router
+const router = express.Router();
 
 /**
  * @swagger
@@ -22,7 +22,7 @@ const router = express.Router(); // Create an Express Router
  *       500:
  *         description: Internal server error
  */
-router.get('/', userController.getAllUsers); // Link route to controller function
+router.get('/', userController.getAllUsers);
 
 /**
  * @swagger
@@ -67,6 +67,6 @@ router.get('/', userController.getAllUsers); // Link route to controller functio
  *       500:
  *         description: Internal server error.
  */
-router.post('/', userController.createUser); // Link route to controller function
+router.post('/', userController.createUser);
 
-module.exports = router; // Export the router
+module.exports = router;

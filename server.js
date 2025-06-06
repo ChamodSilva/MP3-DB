@@ -103,8 +103,7 @@ const swaggerOptions =
             }
         }
     },
-    // IMPORTANT: Update this path to look into the routes folder
-    apis: ['./routes/*.js'], // Look for JSDoc comments in all .js files in the routes folder
+    apis: ['./routes/*.js'], // Looks for JSDoc comments in all .js files in the routes folder
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
@@ -113,7 +112,6 @@ const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // --- Main API Routes ---
-// Mount your specific resource routes under a base path like /api
 app.use('/api/users', userRoutes); // All user-related routes start with /api/users
 app.use('/api/posts', postRoutes); // All post-related routes start with /api/posts
 
@@ -126,7 +124,7 @@ app.get('/', (req, res) =>
 // --- Start the server ---
 app.listen(PORT, () =>
 {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Code Book Server running on port ${PORT}`);
     console.log(`Access API at: http://localhost:${PORT}/api`);
     console.log(`Access Swagger Docs at: http://localhost:${PORT}/api-docs`);
 });

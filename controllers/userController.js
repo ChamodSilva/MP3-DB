@@ -1,4 +1,4 @@
-const pool = require('../config/db'); // Import the database pool
+const pool = require('../config/db');
 
 // Get all users
 exports.getAllUsers = async (req, res) =>
