@@ -1,8 +1,15 @@
+// Import required packages
 const express = require('express');
-const dotenv = require('dotenv');
-const mysql = require('mysql2/promise');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
 
-// Load environment variables from .env file
+// Import project files
+const dotenv = require('dotenv');
+const pool = require('./config/db');
+const userRoutes = require('./routes/userRoutes');
+const postRoutes = require('./routes/postRoutes');
+
+// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -11,38 +18,115 @@ const PORT = process.env.PORT || 3000;
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// --- Database Connection Pool ---
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'sql12345',
-    database: process.env.DB_NAME || 'code_book_db',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
-
-// Test database connection
-pool.getConnection().then(connection =>
+// --- Swagger Definition ---
+const swaggerOptions =
+{
+    swaggerDefinition:
     {
-        console.log('Successfully connected to the database!');
-        connection.release(); // Release the connection back to the pool
-    })
-    .catch(err =>
-    {
-        console.error('Database connection failed:', err.stack);
-        process.exit(1); // Exit the process if DB connection fails
-    });
+        openapi: '3.0.0',
+        info:
+        {
+            title: 'Code Book',
+            version: '1.0.0',
+            description: 'Like the other social media platform 😏, but for coding!',
+            contact:
+            {
+                name: 'Chamod Silva',
+                email: 'my email :P'
+            },
+        },
+        servers:
+        [
+            {
+                url: `http://localhost:${process.env.PORT || 3000}`,
+                description: 'Local development server',
+            },
+        ],
+        components:
+        {
+            schemas:
+            {
+                User:
+                {
+                    type: 'object',
+                    properties:
+                    {
+                        userID: { type: 'integer', readOnly: true, description: 'Auto-generated ID of the user' },
+                        firstName: { type: 'string', description: 'User\'s first name' },
+                        lastName: { type: 'string', description: 'User\'s last name' },
+                        email: { type: 'string', format: 'email', unique: true, description: 'User\'s email address (unique)' },
+                        password: { type: 'string', format: 'password', writeOnly: true, description: 'User\'s password (hashed)' },
+                        joinDate: { type: 'string', format: 'date-time', readOnly: true, description: 'Date user joined' }
+                    },
+                    required: ['firstName', 'lastName', 'email', 'password']
+                },
+                Post:
+                {
+                    type: 'object',
+                    properties:
+                    {
+                        postID: { type: 'integer', readOnly: true, description: 'Auto-generated ID of the post' },
+                        title: { type: 'string', description: 'Title of the post' },
+                        content: { type: 'string', description: 'Content of the post' },
+                        Image: { type: 'string', format: 'url', nullable: true, description: 'URL of an image associated with the post' },
+                        dateCreated: { type: 'string', format: 'date-time', readOnly: true, description: 'Date post was created' },
+                        userID: { type: 'integer', description: 'ID of the user who authored the post' }
+                    },
+                    required: ['title', 'content', 'userID']
+                },
+                Comment:
+                {
+                    type: 'object',
+                    properties:
+                    {
+                        commentID: { type: 'integer', readOnly: true },
+                        userID: { type: 'integer' },
+                        postID: { type: 'integer' },
+                        comment: { type: 'string' },
+                        dateCreated: { type: 'string', format: 'date-time', readOnly: true }
+                    },
+                    required: ['userID', 'postID', 'comment']
+                },
+                React:
+                {
+                    type: 'object',
+                    properties:
+                    {
+                        reactID: { type: 'integer', readOnly: true },
+                        userID: { type: 'integer' },
+                        entityID: { type: 'integer' },
+                        entityType: { type: 'string', enum: ['post', 'comment'] },
+                        react: { type: 'string' }
+                    },
+                    required: ['userID', 'entityID', 'entityType', 'react']
+                }
+            }
+        }
+    },
+    // IMPORTANT: Update this path to look into the routes folder
+    apis: ['./routes/*.js'], // Look for JSDoc comments in all .js files in the routes folder
+};
 
-// --- Basic Route for testing the server ---
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+
+// Serve Swagger UI at /api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// --- Main API Routes ---
+// Mount your specific resource routes under a base path like /api
+app.use('/api/users', userRoutes); // All user-related routes start with /api/users
+app.use('/api/posts', postRoutes); // All post-related routes start with /api/posts
+
+// Basic Route for testing the server
 app.get('/', (req, res) =>
 {
-    res.send('Welcome to the Social Media API!');
+    res.send('Welcome to Code Book!');
 });
 
 // --- Start the server ---
 app.listen(PORT, () =>
 {
     console.log(`Server running on port ${PORT}`);
-    console.log(`Access it at: http://localhost:${PORT}`);
+    console.log(`Access API at: http://localhost:${PORT}/api`);
+    console.log(`Access Swagger Docs at: http://localhost:${PORT}/api-docs`);
 });
