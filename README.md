@@ -135,6 +135,7 @@ INSERT INTO React (userID, entityID, entityType, react) VALUES
 node server.js
 ```
 
+Once Running:
 - The API will be available at: [http://localhost:3000/api](http://localhost:3000/api)
 - Swagger API docs: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
